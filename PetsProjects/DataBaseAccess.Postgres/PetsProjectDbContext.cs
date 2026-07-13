@@ -7,12 +7,12 @@ namespace PetsProjects.DataBaseAccess.Postgres
 {
     public class PetsProjectDbContext(DbContextOptions<PetsProjectDbContext> options) : DbContext(options)
     {
-        DbSet<PetEntity> Pet {  get; set; }
-        DbSet<ServiceJournalEntity> ServiceJournal { get; set; }
-        
-        DbSet<UserEntity> User { get; set; }
+        public DbSet<PetEntity> Pet {  get; set; }
+        public DbSet<ServiceJournalEntity> ServiceJournal { get; set; }
 
-        DbSet<ServiceEntity> Service { get; set; }
+        public DbSet<UserEntity> User { get; set; }
+
+        public DbSet<ServiceEntity> Service { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

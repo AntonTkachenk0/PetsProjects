@@ -8,6 +8,7 @@ namespace PetsProjects.Models
     {
         public const int MAX_LENGTH_NAME = 120;
         public const int MAX_LENGTH_GENDER = 7;
+        public const int MAX_LENGTH_BREED = 120;
         public Guid Id { get; }
 
             public string Name { get;} = string.Empty;
@@ -30,23 +31,31 @@ namespace PetsProjects.Models
             Gender = gender;
             Id_User = id_User;
         }
-        public (Pet ,string Error) Create(Guid id, string name, string breed, string gender, Guid id_User)
+        public static Result<Pet> Create(Guid id, string name, string breed, string gender, Guid id_User)
         {
-            var error = string.Empty;
 
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name) || name.Length > MAX_LENGTH_NAME)
             {
-                error = "Имя не может быть пустым или больше чем 120 символов";
+               return Result<Pet>.Failure("Имя не может быть пустым или больше чем 120 символов");
             }
             if (string.IsNullOrEmpty(gender) || gender.Length > MAX_LENGTH_GENDER)
             {
-                error = "Имя не может быть пустым или больше чем 120 символов";
+                return Result<Pet>.Failure("Пол не может быть пустым или больше чем 7 символов");
             }
+            if (string.IsNullOrEmpty(breed) || breed.Length > MAX_LENGTH_BREED)
+            {
+                return Result<Pet>.Failure("Кличка не может быть пустой");
+            }
+            if(id_User == Guid.Empty)
+            {
+                return Result<Pet>.Failure("Нет хозяина");
+            }
+
 
             var pet = new Pet(id, name, breed, gender, id_User);
 
 
-            return (pet, error);
+            return Result<Pet>.Success(pet);
         }
     }
 }
