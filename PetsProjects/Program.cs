@@ -6,7 +6,7 @@ var configuration = builder.Configuration;
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
-
+// зарегистрировать интерфейс
 
 builder.Services.AddDbContext<PetsProjectDbContext>(
     options =>

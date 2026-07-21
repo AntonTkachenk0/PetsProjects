@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PetsProjects.Abstractions;
 using PetsProjects.DataBaseAccess.Postgres.Entity;
 using PetsProjects.Models;
 
 namespace PetsProjects.DataBaseAccess.Postgres.Repositories
 {
-    public class PetRepository
+    public class PetRepository : IPetRepository
     {
         private readonly PetsProjectDbContext _context;
 
@@ -49,7 +50,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
 
             await _context.Pet.AddAsync(petEntity);
             await _context.SaveChangesAsync();
-             
+
             return petEntity.Id;
         }
     }
