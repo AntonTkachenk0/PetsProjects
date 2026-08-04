@@ -21,9 +21,9 @@ namespace PetsProjects.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ServiceResponse>>> Get()
+        public async Task<ActionResult<List<ServiceResponse>>> Get(CancellationToken ct)
         {
-            var service = await _repository.Get();
+            var service = await _repository.Get(ct);
 
             var response = service.Select(s => new ServiceResponse(s.Id, s.Title, s.Cost));
 
@@ -31,10 +31,10 @@ namespace PetsProjects.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreateService([FromBody] ServiceRequest request)
+        public async Task<ActionResult<Guid>> CreateService([FromBody] ServiceRequest request, CancellationToken ct)
         {
 
-            var resultValidate = await _validator.ValidateAsync(request);
+            var resultValidate = await _validator.ValidateAsync(request, ct);
 
             if (!resultValidate.IsValid)
             {
@@ -56,14 +56,14 @@ namespace PetsProjects.Controllers
                 return BadRequest(service);
             }
 
-            await _repository.Create(service.Value!);
+            await _repository.Create(service.Value!, ct);
             return Ok(service);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<Guid>> Update(Guid id, [FromBody] ServiceRequest request)
+        public async Task<ActionResult<Guid>> Update(Guid id, [FromBody] ServiceRequest request, CancellationToken ct)
         {
-            await _repository.Update(id, request.Title, request.Cost);
+            await _repository.Update(id, request.Title, request.Cost, ct);
             return Ok(id);
         }
     }

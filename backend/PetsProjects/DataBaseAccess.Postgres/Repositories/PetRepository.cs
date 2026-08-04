@@ -14,11 +14,11 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             _context = context;
         }
 
-        public async Task<List<Pet>> Get()
+        public async Task<List<Pet>> Get(CancellationToken ct)
         {
             var petEntity = await _context.Pet
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(ct);
 
 
             var results = petEntity
@@ -37,7 +37,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 .ToList();
         }
 
-        public async Task<Guid> Create(Pet pet)
+        public async Task<Guid> Create(Pet pet, CancellationToken ct)
         {
             var petEntity = new PetEntity
             {
@@ -48,13 +48,13 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 Id_User = pet.Id_User,
             };
 
-            await _context.Pet.AddAsync(petEntity);
-            await _context.SaveChangesAsync();
+            await _context.Pet.AddAsync(petEntity, ct);
+            await _context.SaveChangesAsync(ct);
 
             return petEntity.Id;
         }
 
-        public async Task<Guid> Update(Guid id, string name, string breed, string gender, Guid id_user)
+        public async Task<Guid> Update(Guid id, string name, string breed, string gender, Guid id_user, CancellationToken ct)
         {
 
             await _context.Pet
@@ -63,7 +63,8 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                  .SetProperty(p => p.Name, name)
                  .SetProperty(p => p.Breed, breed)
                  .SetProperty(p => p.Gender, gender)
-                 .SetProperty(p => p.Id_User, id_user));
+                 .SetProperty(p => p.Id_User, id_user)
+                 , ct);
 
             return id;
         }

@@ -21,9 +21,9 @@ namespace PetsProjects.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PetResponse>>> Get()
+        public async Task<ActionResult<List<PetResponse>>> Get(CancellationToken ct)
         {
-            var pets = await _repository.Get();
+            var pets = await _repository.Get(ct);
 
             var response = pets.Select(p => new PetResponse(p.Id, p.Name, p.Breed, p.Gender, p.Id_User));
 
@@ -31,11 +31,13 @@ namespace PetsProjects.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreatePet([FromBody] PetRequest request)
+        public async Task<ActionResult<Guid>> CreatePet(
+            [FromBody] PetRequest request,
+            CancellationToken ct)
         {
 
 
-            var resultValidate = await _validator.ValidateAsync(request);
+            var resultValidate = await _validator.ValidateAsync(request, ct);
 
             if (!resultValidate.IsValid)
             {
@@ -60,14 +62,17 @@ namespace PetsProjects.Controllers
                 return BadRequest(pet);
             }
 
-            await _repository.Create(pet.Value!);
+            await _repository.Create(pet.Value!, ct);
             return Ok(pet.Value);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task <ActionResult<Guid>> Update(Guid id, [FromBody] PetRequest request)
+        public async Task <ActionResult<Guid>> Update(
+            Guid id,
+            [FromBody] PetRequest request,
+            CancellationToken ct)
         {
-            await _repository.Update(id, request.Name, request.Breed, request.Gender, request.Id_User);
+            await _repository.Update(id, request.Name, request.Breed, request.Gender, request.Id_User, ct);
             return Ok(id);
         }
     }

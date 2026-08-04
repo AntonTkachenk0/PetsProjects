@@ -14,22 +14,22 @@ namespace PetsProjects.Controllers
 
         public UserController(IUserRepository repository)
         {
-            _repository = repository;
+            _repository = repository;   
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<UserResponse>>> Get()
+        public async Task<ActionResult<List<UserResponse>>> Get(CancellationToken ct)
         {
-            var user = await _repository.Get();
+            var user = await _repository.Get(ct);
 
             var response = user.Select(p => new UserResponse(p.Id, p.Name, p.Login, p.Email, p.PasswordHached, p.PhotoS3Key));
 
             return Ok(response);
         }
         [HttpGet("minimalInfo")]
-        public async Task<ActionResult<List<UserResponse>>> GetMinimal()
+        public async Task<ActionResult<List<UserResponse>>> GetMinimal(CancellationToken ct)
         {
-            var user = await _repository.Get();
+            var user = await _repository.Get(ct);
 
             var response = user.Select(p => new
             {
@@ -41,7 +41,9 @@ namespace PetsProjects.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreateUser([FromBody] UserRequest request)
+        public async Task<ActionResult<Guid>> CreateUser(
+            [FromBody] UserRequest request,
+            CancellationToken ct)
         {
             var user = UserModel.Create(
                 Guid.NewGuid(),
@@ -57,14 +59,17 @@ namespace PetsProjects.Controllers
                 return BadRequest(user);
             }
 
-            await _repository.Create(user.Value!);
+            await _repository.Create(user.Value!, ct);
             return Ok(user);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<Guid>> Update(Guid id, [FromBody] UserRequest request)
+        public async Task<ActionResult<Guid>> Update(
+            Guid id, 
+            [FromBody] UserRequest request,
+            CancellationToken ct)
         {
-            await _repository.Update(id, request.Name, request.Login, request.Email, request.PasswordHached);
+            await _repository.Update(id, request.Name, request.Login, request.Email, request.PasswordHached,  ct);
             return Ok(id);
         }
     }

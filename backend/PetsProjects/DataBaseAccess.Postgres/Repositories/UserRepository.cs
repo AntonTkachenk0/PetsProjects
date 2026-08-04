@@ -14,11 +14,11 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             _context = context;
         }
 
-        public async Task<List<UserModel>> Get()
+        public async Task<List<UserModel>> Get(CancellationToken ct)
         {
             var userEntity = await _context.User
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(ct);
 
 
             var results = userEntity
@@ -38,7 +38,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 .ToList();
         }
 
-        public async Task<Guid> Create(UserModel user)
+        public async Task<Guid> Create(UserModel user, CancellationToken ct)
         {
             var userEntity = new UserEntity
             {
@@ -50,13 +50,13 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 PhotoS3Key = user.PhotoS3Key,
             };
 
-            await _context.User.AddAsync(userEntity);
-            await _context.SaveChangesAsync();
+            await _context.User.AddAsync(userEntity, ct);
+            await _context.SaveChangesAsync(ct);
 
             return userEntity.Id;
         }
 
-        public async Task<Guid> Update(Guid id, string name, string login, string email, string passwordHached)
+        public async Task<Guid> Update(Guid id, string name, string login, string email, string passwordHached, CancellationToken ct)
         {
 
             await _context.User
@@ -65,7 +65,8 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                  .SetProperty(p => p.Name, name)
                  .SetProperty(p => p.Login, login)
                  .SetProperty(p => p.Email, email)
-                 .SetProperty(p => p.PasswordHached, passwordHached));
+                 .SetProperty(p => p.PasswordHached, passwordHached)
+                 , ct);
 
             return id;
         }

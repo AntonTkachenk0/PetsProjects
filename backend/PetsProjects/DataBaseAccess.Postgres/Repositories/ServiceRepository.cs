@@ -14,11 +14,11 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             _context = context;
         }
 
-        public async Task<List<Service>> Get()
+        public async Task<List<Service>> Get(CancellationToken ct)
         {
             var serviceEntity = await _context.Service
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(ct);
 
 
             var results = serviceEntity
@@ -35,7 +35,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 .ToList();
         }
 
-        public async Task<Guid> Create(Service service)
+        public async Task<Guid> Create(Service service, CancellationToken ct)
         {
             var serviceEntity = new ServiceEntity
             {
@@ -44,20 +44,21 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 Cost = service.Cost
             };
 
-            await _context.Service.AddAsync(serviceEntity);
-            await _context.SaveChangesAsync();
+            await _context.Service.AddAsync(serviceEntity, ct);
+            await _context.SaveChangesAsync(ct);
 
             return serviceEntity.Id;
         }
 
-        public async Task<Guid> Update(Guid id, string title, decimal cost)
+        public async Task<Guid> Update(Guid id, string title, decimal cost, CancellationToken ct)
         {
 
             await _context.Service
                  .Where(s => s.Id == id)
                  .ExecuteUpdateAsync(setter => setter
                  .SetProperty(s => s.Title, title)
-                 .SetProperty(s => s.Cost, cost));
+                 .SetProperty(s => s.Cost, cost)
+                 , ct);
 
             return id;
         }
