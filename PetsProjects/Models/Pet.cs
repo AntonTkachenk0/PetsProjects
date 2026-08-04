@@ -21,7 +21,7 @@ namespace PetsProjects.Models
 
             public Guid Id_User { get;  }
 
-            public User? User { get; }
+            public UserModel? User { get; }
 
         private Pet(Guid id, string name, string breed, string gender, Guid id_User)
         {

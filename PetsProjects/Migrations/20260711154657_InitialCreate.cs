@@ -25,7 +25,7 @@ namespace PetsProjects.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "UserModel",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -56,7 +56,7 @@ namespace PetsProjects.Migrations
                     table.ForeignKey(
                         name: "FK_Pet_User_Id_User",
                         column: x => x.Id_User,
-                        principalTable: "User",
+                        principalTable: "UserModel",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -116,7 +116,7 @@ namespace PetsProjects.Migrations
                 name: "Service");
 
             migrationBuilder.DropTable(
-                name: "User");
+                name: "UserModel");
         }
     }
 }

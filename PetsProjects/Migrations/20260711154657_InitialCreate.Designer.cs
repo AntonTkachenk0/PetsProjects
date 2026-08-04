@@ -132,18 +132,18 @@ namespace PetsProjects.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("User");
+                    b.ToTable("UserModel");
                 });
 
             modelBuilder.Entity("PetsProjects.DataBaseAccess.Postgres.Entity.PetEntity", b =>
                 {
-                    b.HasOne("PetsProjects.DataBaseAccess.Postgres.Entity.UserEntity", "User")
+                    b.HasOne("PetsProjects.DataBaseAccess.Postgres.Entity.UserEntity", "UserModel")
                         .WithMany("Pets")
                         .HasForeignKey("Id_User")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("UserModel");
                 });
 
             modelBuilder.Entity("PetsProjects.DataBaseAccess.Postgres.Entity.ServiceJournalEntity", b =>

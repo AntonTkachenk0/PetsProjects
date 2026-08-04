@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PetsProjects.Abstractions;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PetsProjects.DataBaseAccess.Postgres.Entity;
 using PetsProjects.Models;
 
@@ -52,6 +52,20 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             await _context.SaveChangesAsync();
 
             return petEntity.Id;
+        }
+
+        public async Task<Guid> Update(Guid id, string name, string breed, string gender, Guid id_user)
+        {
+
+            await _context.Pet
+                 .Where(p => p.Id == id)
+                 .ExecuteUpdateAsync(setter => setter
+                 .SetProperty(p => p.Name, name)
+                 .SetProperty(p => p.Breed, breed)
+                 .SetProperty(p => p.Gender, gender)
+                 .SetProperty(p => p.Id_User, id_user));
+
+            return id;
         }
     }
 }
