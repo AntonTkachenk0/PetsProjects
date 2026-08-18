@@ -1,4 +1,22 @@
+
+body {
+    background: #111111;
+}
+
 .nav-bar{
-  background-color: rgba(194, 191, 191, 0.952);
+  background-color: #161616;
   padding: 0.5px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Inter Tight Variable', sans-serif;
+  height: 100px;
+}
+
+nav ul li a {
+  color:#FFFF;
+  text-decoration: none;
+}
+
+nav ul li a:hover {
+color: #dedede;
 }

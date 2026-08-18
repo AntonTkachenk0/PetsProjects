@@ -1,34 +1,54 @@
 .pet-form {
+
   max-width: 400px;
   margin: 0 auto;
   padding: 20px;
   border: 1px solid #c7aeae;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: #161616;
   box-shadow: 0 2px 4px rgba(114, 125, 133, 0.1);
 }
 
-.pet-input{
-   width: 50%;
-   margin-bottom: 10px; 
-     padding: 5px 5px;
+.pet-input {
+  width: 50%;
+  margin-bottom: 10px;
+  padding: 5px 5px;
   border: 1px solid #ccc;
-    
+
   border-radius: 4px;
   margin: 0 auto;
   margin-left: auto;
   margin-right: auto;
 
-  margin-bottom: 10px;      
+  margin-bottom: 10px;
   border: 1px solid #ccc;
 }
 
-.pet-button{
+
+
+.pet-button {
   border: 1px solid #ccc;
-       padding: 5px 4px;
+  padding: 5px 4px;
   border-radius: 4px;
-   width: 50%;
+  width: 50%;
   margin: 0 auto;
   margin-left: auto;
   margin-right: auto;
+  
+}
+
+.pet-button-card {
+  border: 1px solid #ffffff;
+  padding: 5px 4px;
+  font-weight: 700;
+  border-radius: 4px;
+  width: 50%;
+  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'Inter Tight Variable', sans-serif;
+}
+
+.pet-button-card:hover {
+  background:#dedede;
 }

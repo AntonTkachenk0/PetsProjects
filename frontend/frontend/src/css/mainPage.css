@@ -1,10 +1,12 @@
 .pet-card {
   max-width: 200px;
   padding: 20px;
-  border: 1px solid #000000;
+  border: 1px solid #111111;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(114, 125, 133, 0.1);
+  background-color: #161616;
+  color: beige;
+  box-shadow: 0 2px 4px rgba(192, 205, 214, 0.1);
+  font-family: 'Inter Tight Variable', sans-serif;
 }
 
 .pet-avatar {
@@ -29,6 +31,8 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
- border: 1px solid #000000;
+ border: 1px solid #161616;
   border-radius: 8px;
+  color: #FFFF;
+  font-family: 'Inter Tight Variable', sans-serif;
 }

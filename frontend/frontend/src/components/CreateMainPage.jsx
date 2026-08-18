@@ -19,13 +19,10 @@ export default function createMainPage(){
             <>
               <div className="pets-container"> 
             <span>Мои питомцы</span>
-            <span> /n</span>
               {pets.map((pet) => (
                 <CreateCard
                   key={pet.id}
-                  name={pet.name}
-                  breed={pet.breed}
-                  gender={pet.gender}
+                  pet={pet}
                 />
               ))}
             </div>
