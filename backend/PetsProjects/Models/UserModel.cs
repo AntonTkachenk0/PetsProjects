@@ -48,9 +48,9 @@ namespace PetsProjects.Models
             {
                 return Result<UserModel>.Failure("Пароль не может быть пустой ");
             }
-            if (string.IsNullOrEmpty(photoS3Key) || photoS3Key.Length > MAX_LENGTH_CONST)
+            if (string.IsNullOrEmpty(photoS3Key))
             {
-                return Result<UserModel>.Failure("Нет фото");
+                photoS3Key = "default";
             }
 
             var user = new UserModel(id, name, login, email, passwordHached, photoS3Key);

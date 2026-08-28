@@ -12,7 +12,7 @@ using PetsProjects.DataBaseAccess.Postgres;
 namespace PetsProjects.Migrations
 {
     [DbContext(typeof(PetsProjectDbContext))]
-    [Migration("20260711154657_InitialCreate")]
+    [Migration("20260818130133_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -48,6 +48,9 @@ namespace PetsProjects.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Photo_Id")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -88,7 +91,7 @@ namespace PetsProjects.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("VisitDate")
-                        .HasColumnType("date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -132,18 +135,18 @@ namespace PetsProjects.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserModel");
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("PetsProjects.DataBaseAccess.Postgres.Entity.PetEntity", b =>
                 {
-                    b.HasOne("PetsProjects.DataBaseAccess.Postgres.Entity.UserEntity", "UserModel")
+                    b.HasOne("PetsProjects.DataBaseAccess.Postgres.Entity.UserEntity", "User")
                         .WithMany("Pets")
                         .HasForeignKey("Id_User")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("UserModel");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PetsProjects.DataBaseAccess.Postgres.Entity.ServiceJournalEntity", b =>

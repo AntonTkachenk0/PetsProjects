@@ -4,5 +4,6 @@
         string Name,
         string Login,
         string Email,
-        string PasswordHached);
+        string PasswordHached
+        );
 }

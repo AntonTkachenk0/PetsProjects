@@ -11,10 +11,12 @@ namespace PetsProjects.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _repository;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserRepository repository)
+        public UserController(IUserRepository repository, ILogger<UserController> logger)
         {
-            _repository = repository;   
+            _repository = repository;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -26,6 +28,29 @@ namespace PetsProjects.Controllers
 
             return Ok(response);
         }
+        
+        [HttpGet("user")]  
+        public async Task<ActionResult<UserResponse>> GetById(
+            [FromQuery] Guid id,  
+            CancellationToken ct)
+        {
+            var user = await _repository.GetById(id, ct);
+    
+            if (user == null)
+                return NotFound($"Пользователь не найден");
+
+            var response = new UserResponse(
+                user.Id, 
+                user.Name, 
+                user.Login, 
+                user.Email, 
+                user.PasswordHached, 
+                user.PhotoS3Key
+            );
+
+            return Ok(response);
+        }
+        
         [HttpGet("minimalInfo")]
         public async Task<ActionResult<List<UserResponse>>> GetMinimal(CancellationToken ct)
         {
@@ -51,7 +76,7 @@ namespace PetsProjects.Controllers
                 request.Login,
                 request.Email,
                 request.PasswordHached,
-                "PhotoS3Key");
+                "default");
 
             if (!user.IsSuccess)
             {
@@ -66,11 +91,29 @@ namespace PetsProjects.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> Update(
             Guid id, 
-            [FromBody] UserRequest request,
+            [FromBody] string photoId,
             CancellationToken ct)
         {
-            await _repository.Update(id, request.Name, request.Login, request.Email, request.PasswordHached,  ct);
+            await _repository.UpdatePhoto(id, photoId,  ct);
             return Ok(id);
+        }
+
+        [HttpGet("take-sum")]
+        public async Task<ActionResult<decimal>> TakeSum([FromQuery] Guid id_user,CancellationToken ct)
+        {
+            Console.WriteLine(id_user);
+           var result = await  _repository.TakeSum(id_user, ct);
+
+           return Ok(result);
+        }
+
+        [HttpGet("take-history")]
+        public async Task<IActionResult> TakeHistory([FromQuery] Guid id_user, CancellationToken ct)
+        {
+            _logger.LogInformation($"{id_user}");
+            var result = await _repository.TakeHistory(id_user, ct);
+            
+            return Ok(result);
         }
     }
 }

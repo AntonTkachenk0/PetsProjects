@@ -25,7 +25,7 @@ namespace PetsProjects.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserModel",
+                name: "User",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -48,6 +48,7 @@ namespace PetsProjects.Migrations
                     Name = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     Breed = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     Gender = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    Photo_Id = table.Column<string>(type: "text", nullable: true),
                     Id_User = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -56,7 +57,7 @@ namespace PetsProjects.Migrations
                     table.ForeignKey(
                         name: "FK_Pet_User_Id_User",
                         column: x => x.Id_User,
-                        principalTable: "UserModel",
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -66,7 +67,7 @@ namespace PetsProjects.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    VisitDate = table.Column<DateTime>(type: "date", nullable: false),
+                    VisitDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Id_Pet = table.Column<Guid>(type: "uuid", nullable: false),
                     Id_Service = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -116,7 +117,7 @@ namespace PetsProjects.Migrations
                 name: "Service");
 
             migrationBuilder.DropTable(
-                name: "UserModel");
+                name: "User");
         }
     }
 }

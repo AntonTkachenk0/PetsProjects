@@ -7,25 +7,63 @@ using PetsProjects.Models;
 namespace PetsProjects.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
 
     public class PetsController : ControllerBase
     {
         private readonly IPetRepository _repository;
         private readonly IValidator<PetRequest> _validator;
-
-        public PetsController(IPetRepository repository, IValidator<PetRequest> validator)
+        private readonly IValidator<FileUploadDto> _fileValidator;
+        private readonly IOptions<S3Options> _options;
+        private readonly IAmazonS3 _s3;
+        private readonly S3Options _s3Options;
+        public PetsController(
+            
+            IPetRepository repository, 
+            IValidator<PetRequest> validator,
+            IValidator<FileUploadDto> fileValidator,
+            IOptions<S3Options> options, 
+            IAmazonS3 s3)
         {
+            _s3Options = options.Value;
             _repository = repository;
             _validator = validator;
+            _fileValidator = fileValidator;
+            _options = options;
+            _s3 = s3;
         }
 
+       [HttpGet("{photo_id}/photo")]
+        public async Task<IActionResult> GetImage([FromRoute] string photo_id, CancellationToken ct)
+        {
+
+            
+            var getRequest = new GetObjectRequest
+            {
+                BucketName = _s3Options.BucketName,
+            };
+
+            getRequest.Key = photo_id switch
+            {
+                "defaultPet" => "defaultPet",
+                "default" => "default",
+                _ => $"{photo_id}"
+            };
+
+            var response = await _s3.GetObjectAsync(getRequest, ct);
+        
+            if (response.HttpStatusCode == HttpStatusCode.OK)
+                return File(response.ResponseStream, response.Headers["Content-Type"]);
+
+            return BadRequest();
+        }
+        
         [HttpGet]
         public async Task<ActionResult<List<PetResponse>>> Get(CancellationToken ct)
         {
             var pets = await _repository.Get(ct);
 
-            var response = pets.Select(p => new PetResponse(p.Id, p.Name, p.Breed, p.Gender, p.Id_User));
+            var response = pets.Select(p => new PetResponse(p.Id, p.Name, p.Breed, p.Gender,  p.Photo_Id! , p.Id_User));
 
             return Ok(response);    
         }
@@ -49,10 +87,11 @@ namespace PetsProjects.Controllers
             }
 
             var pet = Pet.Create(
-                Guid.NewGuid(), 
+                Guid.NewGuid(),
                 request.Name,
                 request.Breed,
-                request.Gender, 
+                request.Gender,
+                "defaultPet",
                 request.Id_User);
 
             if (!pet.IsSuccess)
@@ -75,5 +114,16 @@ namespace PetsProjects.Controllers
             await _repository.Update(id, request.Name, request.Breed, request.Gender, request.Id_User, ct);
             return Ok(id);
         }
+        
+        [HttpPut("{id:guid}/photo")]
+        public async Task<ActionResult<Guid>> UpdatePhoto(
+            Guid id, 
+            [FromBody] string photoId,
+            CancellationToken ct)
+        {
+            await _repository.UpdatePhoto(id, photoId,  ct);
+            return Ok(id);
+        }
+
     }
 }

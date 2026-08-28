@@ -2,7 +2,8 @@
 
 namespace PetsProjects.Controllers.Contracts.Validator
 {
-    public class PetRequestValidator : AbstractValidator<PetRequest>
+    public class PetRequestValidator 
+        : AbstractValidator<PetRequest>
     {
 
         public PetRequestValidator()

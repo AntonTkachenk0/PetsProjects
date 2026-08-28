@@ -10,7 +10,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Entity
 
         public decimal Cost { get; set; } = 0;
 
-        public List<ServiceJournalEntity> JournalService = new();
+        public List<ServiceJournalEntity> JournalService  { get; set; } = new();
     }
 
 }

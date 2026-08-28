@@ -27,6 +27,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                         entity.Name,
                         entity.Breed,
                         entity.Gender,
+                        entity.Photo_Id,
                         entity.Id_User
                     ))
                     .ToList();
@@ -34,6 +35,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             return results
                 .Where(r => r.IsSuccess)
                 .Select(r => r.Value!)
+                .OrderByDescending(p => p.Name)
                 .ToList();
         }
 
@@ -45,6 +47,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                 Name = pet.Name,
                 Gender = pet.Gender,
                 Breed = pet.Breed,
+                Photo_Id = pet.Photo_Id,
                 Id_User = pet.Id_User,
             };
 
@@ -65,6 +68,40 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
                  .SetProperty(p => p.Gender, gender)
                  .SetProperty(p => p.Id_User, id_user)
                  , ct);
+
+            return id;
+        }
+        
+        public async Task<string> TakePhotoId(Guid user_id, CancellationToken ct)
+        {
+            var photoId = await _context.Pet
+                .Where(u => u.Id == user_id)
+                .Select(u => u.Photo_Id)
+                .FirstOrDefaultAsync(ct);
+            
+            return photoId!;
+        }    
+            
+        
+        public async Task<Guid> TakeIdUserFromPhotoId(string photo_id, CancellationToken ct)
+        {
+            var photoId = await _context.Pet
+                .Where(u => u.Photo_Id == photo_id)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync(ct);
+            
+            return photoId;
+        }
+        
+        
+        public async Task<Guid> UpdatePhoto(Guid id, string photoId, CancellationToken ct)
+        {
+
+            await _context.Pet
+                .Where(p => p.Id == id)
+                .ExecuteUpdateAsync(setter => setter
+                        .SetProperty(p => p.Photo_Id, photoId)
+                    , ct);
 
             return id;
         }

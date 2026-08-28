@@ -27,14 +27,14 @@ export const createUser = async (user) => {
 }
 
 export const fetchUser = async (userId) => {
-    try{
+    try {
         var response = await axios.get(
-             `http://localhost:5067/User/user?id=${userId}`
+            `http://localhost:5067/User/user?id=${userId}`
         )
-        
+
         return response.data;
     }
-    catch(e){
+    catch (e) {
         console.log(userId)
         throw e;
     }
@@ -72,6 +72,38 @@ export const postPhoto = async (formData, selectedFile) => {
         }
     } catch (error) {
         console.error(error, selectedFile);
+    }
+
+}
+
+export const getStats = async (idUser) => {
+
+    try {
+
+        var response = await axios.get('http://localhost:5067/User/take-sum', {
+            params: { id_user: idUser }
+        })
+        console.log(idUser);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+    }
+
+}
+
+
+
+export const getHistory = async (idUser) => {
+
+    try {
+
+        var response = await axios.get('http://localhost:5067/User/take-history', {
+            params: { id_user: idUser }
+        })
+        console.log(idUser);
+        return response.data;
+    } catch (error) {
+        console.error(error);
     }
 
 }

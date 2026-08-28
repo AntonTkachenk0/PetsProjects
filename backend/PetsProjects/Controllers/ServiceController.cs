@@ -13,11 +13,13 @@ namespace PetsProjects.Controllers
     {
         private readonly IServiceRepository _repository;
         private readonly IValidator<ServiceRequest> _validator;
+        private readonly ILogger<ServiceController> _logger;
 
-        public ServiceController(IServiceRepository repository, IValidator<ServiceRequest> validator)
+        public ServiceController(IServiceRepository repository, IValidator<ServiceRequest> validator, ILogger<ServiceController> logger)
         {
             _repository = repository;
             _validator = validator;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -33,31 +35,41 @@ namespace PetsProjects.Controllers
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateService([FromBody] ServiceRequest request, CancellationToken ct)
         {
-
-            var resultValidate = await _validator.ValidateAsync(request, ct);
-
-            if (!resultValidate.IsValid)
+            try
             {
-                foreach (var failure in resultValidate.Errors)
+                var resultValidate = await _validator.ValidateAsync(request, ct);
+                _logger.LogInformation("Входные данные: {request}", request);
+                if (!resultValidate.IsValid)
                 {
-                    Console.WriteLine($"Свойство {failure.PropertyName} не прошло валидацию. Ошибка {failure.ErrorMessage} ");
+                    foreach (var failure in resultValidate.Errors)
+                    {
+                        _logger.LogInformation("Свойство {failure.PropertyName} не прошло валидацию. Ошибка {failure.ErrorMessage}", failure.PropertyName, failure.ErrorMessage);
+                    }
+
+                    _logger.LogInformation("Не прошло валидацию. Входные данные: {request}. Ошибки валидации: {error}", request, resultValidate.Errors);
+                    return BadRequest(resultValidate.Errors);
                 }
-                return BadRequest(resultValidate.Errors);
+
+                var service = Service.Create(
+                    Guid.NewGuid(),
+                    request.Title,
+                    request.Cost);
+
+                if (!service.IsSuccess)
+                {
+                    _logger.LogWarning("Ошибка создания. Ошибка: {service.Error}", service.Error);
+                    return BadRequest(service);
+                }
+
+                await _repository.Create(service.Value!, ct);
+                _logger.LogInformation("Услуга успешно создана!");
+                return Ok(service);
             }
-
-            var service = Service.Create(
-                Guid.NewGuid(),
-                request.Title,
-                request.Cost);
-
-            if (!service.IsSuccess)
+            catch (Exception e)
             {
-                Console.WriteLine("Ошибка");
-                return BadRequest(service);
+                _logger.LogError(e, "Ошибка при создании услуги: {request}" , request);
+                return  BadRequest(e.Message);
             }
-
-            await _repository.Create(service.Value!, ct);
-            return Ok(service);
         }
 
         [HttpPut("{id:guid}")]

@@ -11,19 +11,18 @@ namespace PetsProjects.DataBaseAccess.Postgres.Configuration
             builder.HasKey(s => s.Id);
 
             builder.Property(s => s.VisitDate)
-                .IsRequired()
-                .HasColumnType("date");
+                .IsRequired();
 
             builder.Property(p => p.Id_Pet)
                 .IsRequired();
 
-            builder.
-                HasOne(s => s.Pets)
-                .WithMany(p => p.Services);
+            builder.HasOne(s => s.Pets)
+                .WithMany(p => p.Services)
+                .HasForeignKey(s => s.Id_Pet);
 
-            builder.
-                HasOne(s => s.Service)
-                .WithMany(p => p.JournalService);
+            builder.HasOne(s => s.Service)
+                .WithMany(p => p.JournalService)
+                .HasForeignKey(s => s.Id_Service);
         }
     }
 }

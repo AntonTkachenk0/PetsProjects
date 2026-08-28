@@ -2,7 +2,8 @@
 
 namespace PetsProjects.Controllers.Contracts.Validator
 {
-    public class ServiceRequestValidator : AbstractValidator<ServiceRequest>
+    public class ServiceRequestValidator 
+        : AbstractValidator<ServiceRequest>
     {
 
         public ServiceRequestValidator()

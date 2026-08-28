@@ -16,6 +16,8 @@ namespace PetsProjects.Models
             public string Breed { get;  } = string.Empty;
 
             public string Gender { get; } = string.Empty;
+            
+            public string? Photo_Id { get; set; } = string.Empty;
 
             public List<ServiceJournal> Services = new();
 
@@ -23,15 +25,16 @@ namespace PetsProjects.Models
 
             public UserModel? User { get; }
 
-        private Pet(Guid id, string name, string breed, string gender, Guid id_User)
+        private Pet(Guid id, string name, string breed, string gender,  string photo_Id, Guid id_User)
         {
             Id = id;
             Name = name;
             Breed = breed;
             Gender = gender;
+            Photo_Id = photo_Id;
             Id_User = id_User;
         }
-        public static Result<Pet> Create(Guid id, string name, string breed, string gender, Guid id_User)
+        public static Result<Pet> Create(Guid id, string name, string breed, string gender, string? photo_Id , Guid id_User)
         {
 
             if (string.IsNullOrEmpty(name) || name.Length > MAX_LENGTH_NAME)
@@ -50,9 +53,13 @@ namespace PetsProjects.Models
             {
                 return Result<Pet>.Failure("Нет хозяина");
             }
+            if (string.IsNullOrEmpty(photo_Id))
+            {
+                photo_Id = "defaultPet";
+            }
 
 
-            var pet = new Pet(id, name, breed, gender, id_User);
+            var pet = new Pet(id, name, breed, gender, photo_Id, id_User);
 
 
             return Result<Pet>.Success(pet);

@@ -13,7 +13,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Entity
         public string Email { get; set; } = string.Empty;
         public string PasswordHached { get; set; } = string.Empty;
 
-        public List<PetEntity> Pets = new();
+        public List<PetEntity> Pets { get; set; } = new();
         public string PhotoS3Key { get; set; } = string.Empty;
 
     }

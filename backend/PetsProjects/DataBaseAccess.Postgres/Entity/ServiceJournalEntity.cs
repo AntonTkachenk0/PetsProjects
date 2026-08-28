@@ -6,7 +6,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Entity
     {
         public Guid Id { get; set; }
 
-        public DateTime VisitDate { get; set; } = DateTime.UtcNow;
+        public DateTime VisitDate { get; set; }
 
         public Guid Id_Pet { get; set; }
 

@@ -13,8 +13,10 @@ namespace PetsProjects.DataBaseAccess.Postgres.Entity
         public string Breed { get; set; } = string.Empty;
 
         public string Gender { get; set; } = string.Empty;
-
-        public List<ServiceJournalEntity> Services = new();
+        
+        public string? Photo_Id { get; set; } = string.Empty;
+ 
+        public List<ServiceJournalEntity> Services  { get; set; } = new();
 
         public Guid Id_User { get; set; }
         

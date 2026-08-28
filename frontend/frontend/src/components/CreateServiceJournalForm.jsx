@@ -65,7 +65,7 @@ export default function CreateServiceJournalForm({ onCreate }) {
                     </select>
                     <label for="localdate">Время: </label>
                     <input type="datetime-local" id="localdate" name="date"
-                     onChange={(e) => setAppointment({ ...appointment, visitDate:e.target.value})}
+                     onChange={(e) => setAppointment({ ...appointment, VisitDate:e.target.value})}
                     />
 
                     <button type="submit">отправить</button>
