@@ -76,14 +76,14 @@ export const postPhoto = async (formData, selectedFile) => {
 
 }
 
-export const getStats = async (idUser) => {
+export const getStats = async (userId) => {
 
     try {
 
         var response = await axios.get('http://localhost:5067/User/take-sum', {
-            params: { id_user: idUser }
+            params: { userId: userId }
         })
-        console.log(idUser);
+        console.log(userId);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -93,17 +93,32 @@ export const getStats = async (idUser) => {
 
 
 
-export const getHistory = async (idUser) => {
+export const getHistory = async (userId) => {
 
     try {
 
         var response = await axios.get('http://localhost:5067/User/take-history', {
-            params: { id_user: idUser }
+            params: { userId: userId }
         })
-        console.log(idUser);
+        console.log(userId);
         return response.data;
     } catch (error) {
         console.error(error);
+    }
+
+}
+
+export const updateUserInfo = async (user) => {
+
+    try {
+
+        const response = await axios.put('http://localhost:5067/User/update-info', user)
+          
+        if (response.status === 200) {
+            console.log('Данные успешно обновлены!');
+        }
+    } catch (error) {
+        console.error(error, user);
     }
 
 }
