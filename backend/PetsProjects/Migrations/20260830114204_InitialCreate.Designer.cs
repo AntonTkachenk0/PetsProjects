@@ -12,7 +12,7 @@ using PetsProjects.DataBaseAccess.Postgres;
 namespace PetsProjects.Migrations
 {
     [DbContext(typeof(PetsProjectDbContext))]
-    [Migration("20260818130133_InitialCreate")]
+    [Migration("20260830114204_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

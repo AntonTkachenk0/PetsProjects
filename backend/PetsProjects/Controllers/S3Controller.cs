@@ -14,14 +14,16 @@ public class S3Controller : ControllerBase
     private readonly IUserRepository _userRepository;
     private readonly IPetRepository _petRepository;
     private readonly IValidator<FileUploadDto> _validator;
+    private readonly ILogger _logger;
 
-    public S3Controller(IOptions<S3Options> options, IAmazonS3 s3, IUserRepository userRepository, IPetRepository petRepository,IValidator<FileUploadDto> validator)
+    public S3Controller(IOptions<S3Options> options, IAmazonS3 s3, IUserRepository userRepository, IPetRepository petRepository,IValidator<FileUploadDto> validator, ILogger<S3Controller> logger)
     {
         _s3Options = options.Value;
         _s3 = s3;
         _userRepository = userRepository;
         _petRepository = petRepository;
         _validator = validator;
+        _logger = logger;
     }
 
     [HttpPost("image/")]
@@ -31,12 +33,14 @@ public class S3Controller : ControllerBase
         CancellationToken ct)
     {
         var resultValidate = await _validator.ValidateAsync(uploadDto, ct);
-
+        
+        _logger.LogInformation("Полученный файл: {File}", uploadDto);
+        
         if (!resultValidate.IsValid)
         {
             foreach (var failure in resultValidate.Errors)
             {
-                Console.WriteLine($"Свойство {failure.PropertyName} не прошло валидацию. Ошибка {failure.ErrorMessage} ");
+               _logger.LogError($"Свойство {failure.PropertyName} не прошло валидацию. Ошибка {failure.ErrorMessage} ");
             }
             return BadRequest(resultValidate.Errors);
         }
@@ -45,6 +49,8 @@ public class S3Controller : ControllerBase
         {
             var newGuid = Guid.NewGuid().ToString();
 
+            _logger.LogInformation("Новый id для фото {NewGuid}", newGuid);
+            
             var photoId = string.Empty;
             
             
@@ -56,22 +62,25 @@ public class S3Controller : ControllerBase
                 InputStream = uploadDto.File.OpenReadStream(),
             };
 
+            _logger.LogInformation("Корзина для создания: {RequestCreate}",  requestCreate);
+            
             switch (uploadDto.Role.ToLower())
             {
                 case "user":
                     photoId = await _userRepository.TakePhotoId(uploadDto.PetOrUserId, ct);
-                    Console.WriteLine(photoId);
+                    _logger.LogInformation("Изменения для пользователя. Id пользователя {UserId} - новое фото {PhotoId}",uploadDto.PetOrUserId, photoId);
                     await _userRepository.UpdatePhoto(uploadDto.PetOrUserId, newGuid, ct);
+                    
                     break;
                 case "pet":
                     photoId = await _petRepository.TakePhotoId(uploadDto.PetOrUserId, ct);
-                    Console.WriteLine(photoId);
+                    _logger.LogInformation("Изменения для питомца. Id питомца {UserId}  - новое фото {PhotoId}",uploadDto.PetOrUserId, photoId);
                     await _petRepository.UpdatePhoto(uploadDto.PetOrUserId, newGuid, ct);
                     break;
             }
             
 
-            Console.WriteLine(photoId);
+            
             if (photoId != "defaultPet" && photoId != "default" )
             {
                 var deleteRequest = new DeleteObjectRequest
@@ -79,24 +88,30 @@ public class S3Controller : ControllerBase
                     BucketName = _s3Options.BucketName,
                     Key = photoId
                 };
+                _logger.LogInformation("Попытка удаления старого фото... Название коризы - {S3Optins}, Id photo {PhotoId}", _s3Options.BucketName, photoId);
                 await _s3.DeleteObjectAsync(deleteRequest, ct);
+                _logger.LogInformation("Старое фото было успешно удалено. Id фото {PhotoId}", photoId);
             }
 
+            
+            _logger.LogInformation("Попытка добавить фото...");
             var responseCreate = await _s3.PutObjectAsync(requestCreate, ct);
 
             if (responseCreate.HttpStatusCode == HttpStatusCode.OK)
             {
+                _logger.LogInformation("Фото успешно добавлено!");
                 return Ok(responseCreate);
             }
             else
             {
-                Console.WriteLine($"Ошибка тута. создание - {responseCreate.HttpStatusCode}") ;
+                _logger.LogWarning($"Ошибка тута. создание - {responseCreate.HttpStatusCode}") ;
                 return BadRequest(
                     $"Ошибка создания или удаления.  создание - {responseCreate.HttpStatusCode}");
             }
         }
         catch (Exception e)
         {
+            _logger.LogError(e.Message,  "Ошибка. {UploadDto}", uploadDto.PetOrUserId);
             return StatusCode(500, new { error = e.Message });
         }
     }

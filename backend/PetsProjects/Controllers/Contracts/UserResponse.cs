@@ -1,7 +1,7 @@
 ﻿namespace PetsProjects.Controllers.Contracts
 {
     public record UserResponse(
-        Guid id,
+        Guid Id,
         string Name, 
         string Login,
         string Email,

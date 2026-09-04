@@ -1,11 +1,16 @@
 using FluentValidation;
+using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using PetsProjects;
 using PetsProjects.Abstractions;
 using PetsProjects.Controllers.Contracts;
 using PetsProjects.Controllers.Contracts.Validator;
 using PetsProjects.DataBaseAccess.Postgres;
 using PetsProjects.DataBaseAccess.Postgres.Repositories;
+using PetsProjects.Extensions;
+using PetsProjects.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -24,13 +29,21 @@ builder.Services.AddSwaggerGen();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-builder.Services.AddTransient<IPetRepository, PetRepository>();
-builder.Services.AddTransient<IServiceRepository, ServiceRepository>();
-builder.Services.AddTransient<IUserRepository, UserRepository>();
-builder.Services.AddTransient<IServiceJournalRepository, ServiceJournalRepository>();
+builder.Services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
+
+var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
+builder.Services.AddApiAuthentication(Options.Create(jwtOptions));
+
+builder.Services.AddTransient<UsersService>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IServiceJournalRepository, ServiceJournalRepository>();
+
+builder.Services.AddTransient<IJwtProvider, JwtProvider>();
+builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 
 builder.Services.AddTransient<IValidator<PetRequest>, PetRequestValidator>();
 builder.Services.AddTransient<IValidator<ServiceRequest>, ServiceRequestValidator>();
@@ -64,7 +77,11 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173");
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "http://localhost:5067",  
+            "https://localhost:7241"   
+        );
         policy.AllowAnyHeader();
         policy.AllowAnyMethod();
     });
@@ -93,7 +110,15 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.Strict,
+    HttpOnly = HttpOnlyPolicy.Always,
+    Secure = CookieSecurePolicy.Always,
+});
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 

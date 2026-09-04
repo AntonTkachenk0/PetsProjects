@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PetsProjects.Abstractions;
 using PetsProjects.Controllers.Contracts;
 using PetsProjects.Models;
+using PetsProjects.Services;
 
 namespace PetsProjects.Controllers
 {
@@ -12,14 +14,17 @@ namespace PetsProjects.Controllers
     {
         private readonly IUserRepository _repository;
         private readonly ILogger<UserController> _logger;
+        private readonly UsersService _service;
 
-        public UserController(IUserRepository repository, ILogger<UserController> logger)
+        public UserController(IUserRepository repository, ILogger<UserController> logger, UsersService service)
         {
             _repository = repository;
             _logger = logger;
+            _service = service;
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<List<UserResponse>>> Get(CancellationToken ct)
         {
             var user = await _repository.Get(ct);
@@ -35,9 +40,6 @@ namespace PetsProjects.Controllers
             CancellationToken ct)
         {
             var user = await _repository.GetById(id, ct);
-    
-            if (user == null)
-                return NotFound($"Пользователь не найден");
 
             var response = new UserResponse(
                 user.Id, 
@@ -65,28 +67,6 @@ namespace PetsProjects.Controllers
             return Ok(response);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Guid>> CreateUser(
-            [FromBody] UserRequest request,
-            CancellationToken ct)
-        {
-            var user = UserModel.Create(
-                Guid.NewGuid(),
-                request.Name,
-                request.Login,
-                request.Email,
-                request.PasswordHached,
-                "default");
-
-            if (!user.IsSuccess)
-            {
-                Console.WriteLine("Ошибка");
-                return BadRequest(user);
-            }
-
-            await _repository.Create(user.Value!, ct);
-            return Ok(user);
-        }
 
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> Update(
@@ -98,22 +78,63 @@ namespace PetsProjects.Controllers
             return Ok(id);
         }
 
-        [HttpGet("take-sum")]
-        public async Task<ActionResult<decimal>> TakeSum([FromQuery] Guid id_user,CancellationToken ct)
+        [HttpPut("update-info")]
+        public async Task<ActionResult<Guid>> UpdateInfo([FromBody] UserUpdateRequest request, CancellationToken ct)
         {
-            Console.WriteLine(id_user);
-           var result = await  _repository.TakeSum(id_user, ct);
+            try
+            {
+                _logger.LogInformation("Данные пользователя: {Request}", request);
+
+                await _repository.UpdateInfo(request.Id, request.Name!, request.Login!, request.Email!, ct);
+
+                return Ok(request.Id);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, "Ошибка обновления данных. Данные {Request}", request);
+                throw;
+            }
+        }
+        
+
+        [HttpGet("take-sum")]
+        public async Task<ActionResult<decimal>> TakeSum([FromQuery] Guid userId,CancellationToken ct)
+        {
+            Console.WriteLine(userId);
+           var result = await  _repository.TakeSum(userId, ct);
 
            return Ok(result);
         }
 
         [HttpGet("take-history")]
-        public async Task<IActionResult> TakeHistory([FromQuery] Guid id_user, CancellationToken ct)
+        public async Task<IActionResult> TakeHistory([FromQuery] Guid userId, CancellationToken ct)
         {
-            _logger.LogInformation($"{id_user}");
-            var result = await _repository.TakeHistory(id_user, ct);
+            _logger.LogInformation("{UserId}", userId);
+            var result = await _repository.TakeHistory(userId, ct);
             
             return Ok(result);
+        }
+        
+        [HttpPost("register")]
+        public async Task<ActionResult<Guid>> CreateUser(
+            [FromBody] RegisterUserRequest request,
+            CancellationToken ct)
+        {
+           await _service.Register(request.Name, request.Login, request.Email, request.Password, ct);
+
+            // await _repository.Create(user.Value!, ct);
+            return Ok();
+        }
+        [HttpPost("login")]
+        public async Task<ActionResult<Guid>> Login(
+            [FromBody] LoginUserRequest request,
+            CancellationToken ct)
+        {
+            var token = await _service.Login(request.Email, request.Password, ct);
+            
+            HttpContext.Response.Cookies.Append("tasty-cookies", token);
+            
+            return Ok(token);
         }
     }
 }
