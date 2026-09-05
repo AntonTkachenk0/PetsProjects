@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import Modal from 'react-modal';
-import CreateChangePhotoPet from './CreateChangePhotoPet';
+import CreateChangePhoto from './CreateChangePhotoPet';
 
 Modal.setAppElement('#root');
 export default function ModalPets({ isOpen, onClose, pet, photoUrl }) {
 
-    
+
 
     return (
         <Modal isOpen={isOpen} onRequestClose={onClose} contentLabel='тест'>
@@ -14,12 +14,11 @@ export default function ModalPets({ isOpen, onClose, pet, photoUrl }) {
                 <div className='pet-avatar'>
                     <img src={photoUrl} />
                 </div>
-                <CreateChangePhotoPet entityId={pet.id} role={"pet"}/>
+                <CreateChangePhoto entityId={pet.id} role={"pet"} />
                 <form className="pet-form">
                     <p>Кличка: {pet.name}</p>
                     <p>Пол: {pet.gender}</p>
                     <p>Порода {pet.breed}</p>
-
 
                     <input
                         type="text"

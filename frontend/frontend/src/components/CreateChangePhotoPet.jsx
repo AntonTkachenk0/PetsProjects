@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { postPhoto } from "../services/users";
 
-export default function CreateChangePhotoPet({ entityId, role }) {
+export default function CreateChangePhoto({ entityId, role }) {
 
     const [selectedFile, setSelectedFile] = useState(null);
 
@@ -22,14 +22,23 @@ export default function CreateChangePhotoPet({ entityId, role }) {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('PetOrUserId', entityId)
-        formData.append('Role', role)
 
+        console.log(entityId);
+        const formData = new FormData();
+        formData.append('File', selectedFile);
+        if(entityId == null){
+            formData.append('PetId', '')
+            console.log()
+        }
+        else formData.append('PetId', entityId)
+
+        formData.append('Role', role);
         await postPhoto(formData, selectedFile);
 
+        console.log(entityId);
+        console.log(role);
 
+         window.location.reload();
 
     }
     return (
@@ -40,7 +49,7 @@ export default function CreateChangePhotoPet({ entityId, role }) {
                 accept=".png,.jpg,.jpeg"
                 onChange={handleFileChange}
             />
-            
+
             <button className='submit-btn' type="submit">Сменить</button>
         </form>
 

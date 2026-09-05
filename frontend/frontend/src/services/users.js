@@ -26,16 +26,15 @@ export const createUser = async (user) => {
     }
 }
 
-export const fetchUser = async (userId) => {
+export const fetchUser = async () => {
     try {
         var response = await axios.get(
-            `http://localhost:5067/User/user?id=${userId}`
-        )
+            `http://localhost:5067/User/user`, {withCredentials: true});
 
         return response.data;
     }
     catch (e) {
-        console.log(userId)
+        console.log("Ошибка получения пользователя")
         throw e;
     }
 
@@ -46,13 +45,15 @@ export const fetchUserPhotoBlob = async (photoId) => {
         var response = await axios.get(
             `http://localhost:5067/api/s3/image/${photoId}`,
             {
-                responseType: 'blob'
-            }
+                responseType: 'blob',
+                withCredentials: true
+            },
+          
         );
         return response.data;
     }
     catch (e) {
-        alert('Ошибка получения!')
+        console.log('Ошибка получения!')
         throw e;
     }
 }
@@ -60,13 +61,14 @@ export const fetchUserPhotoBlob = async (photoId) => {
 export const postPhoto = async (formData, selectedFile) => {
 
     try {
-
+        console.log("я тут")
         const response = await axios.post('http://localhost:5067/api/s3/image', formData,
             {
                 headers:
-                    { 'Content-Type': 'multipart/form-data' }
+                    { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true
             });
-
+        console.log("я тут2")
         if (response.status === 200) {
             console.log('Фото успешно добавлено!');
         }
@@ -76,14 +78,11 @@ export const postPhoto = async (formData, selectedFile) => {
 
 }
 
-export const getStats = async (userId) => {
+export const getStats = async () => {
 
     try {
 
-        var response = await axios.get('http://localhost:5067/User/take-sum', {
-            params: { userId: userId }
-        })
-        console.log(userId);
+        var response = await axios.get('http://localhost:5067/User/take-sum', {withCredentials: true})
         return response.data;
     } catch (error) {
         console.error(error);
@@ -93,14 +92,11 @@ export const getStats = async (userId) => {
 
 
 
-export const getHistory = async (userId) => {
+export const getHistory = async () => {
 
     try {
 
-        var response = await axios.get('http://localhost:5067/User/take-history', {
-            params: { userId: userId }
-        })
-        console.log(userId);
+        var response = await axios.get('http://localhost:5067/User/take-history', {withCredentials: true});
         return response.data;
     } catch (error) {
         console.error(error);
@@ -112,13 +108,48 @@ export const updateUserInfo = async (user) => {
 
     try {
 
-        const response = await axios.put('http://localhost:5067/User/update-info', user)
+        console.log(userId);
+        const response = await axios.put('http://localhost:5067/User/update-info', user, {withCredentials: true} )
           
         if (response.status === 200) {
             console.log('Данные успешно обновлены!');
         }
     } catch (error) {
         console.error(error, user);
+    }
+
+}
+
+
+export const loginUser = async (user) => {
+
+    try {
+        const response = await axios.post('http://localhost:5067/User/login', user, { 
+             withCredentials: true
+            }); 
+          
+        if (response.status === 200) {
+            console.log('Пользователь вошел в систему!');
+        }
+    } catch (error) {
+        console.error(error, user);
+    }
+
+}
+
+
+export const logoutUser = async () => {
+
+    try {
+        const response = await axios.post('http://localhost:5067/User/logout', {}, { 
+             withCredentials: true
+            });
+          
+        if (response.status === 200) {
+            console.log('Пользователь вышел из системы!');
+        }
+    } catch (error) {
+        console.error(error);
     }
 
 }

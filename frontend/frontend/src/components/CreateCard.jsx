@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import catImage from '../assets/cat.jpg';
 import { fetchPhotoBlob } from '../services/pets';
 import ModalPets from './ModalPets';
-import CreateChangePhotoPet from './CreateChangePhotoPet';
+import CreateChangePhoto from './CreateChangePhotoPet';
 
 export default function CreateCard({ pet }) {
 
@@ -46,9 +46,9 @@ export default function CreateCard({ pet }) {
                     <p>Пол: {pet.gender}</p>
                     <p>Порода: {pet.breed}</p>
 
-                    <button 
-                    className='pet-button-card'
-                    onClick={openModal}>Открыть</button>
+                    <button
+                        className='pet-button-card'
+                        onClick={openModal}>Открыть</button>
 
                     <ModalPets
                         isOpen={isModalOpen}

@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const createPet = async (pet) => {
     try{
-        var response = await axios.post('http://localhost:5067/api/Pets/', pet);
+        var response = await axios.post('http://localhost:5067/api/Pets/', pet, {withCredentials: true});
         alert('Питомец добавлен успешно!')
         return response.data;
     }
@@ -14,7 +14,7 @@ export const createPet = async (pet) => {
 
 export const fetchPets = async (pet) => {
     try{
-        var response = await axios.get('http://localhost:5067/api/Pets/');
+        var response = await axios.get('http://localhost:5067/api/Pets/', {withCredentials: true});
         return response.data;
     }
     catch(e){
@@ -28,8 +28,10 @@ export const fetchPhotoBlob = async (photoId) => {
         var response = await axios.get(
             `http://localhost:5067/api/s3/image/${photoId}/`,
             {
-                responseType: 'blob'
-            }
+                responseType: 'blob',
+                withCredentials: true
+
+            },
         );
         return response.data;
     }
