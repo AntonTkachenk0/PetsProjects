@@ -6,6 +6,7 @@ namespace PetsProjects.Models
     public class UserModel
     {
         public const int MAX_LENGTH_NAME = 120;
+        
         public const int MAX_LENGTH_CONST= 256;
         public Guid Id { get;  }
 
@@ -19,7 +20,7 @@ namespace PetsProjects.Models
         public List<Pet> Pets = new();
         public string PhotoS3Key { get; } = string.Empty;
 
-
+      
         private UserModel(Guid id, string name, string login, string email, string passwordHached, string photoS3Key)
         {
             Id = id; 

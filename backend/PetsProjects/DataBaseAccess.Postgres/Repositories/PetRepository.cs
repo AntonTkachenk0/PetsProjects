@@ -8,33 +8,46 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
     public class PetRepository : IPetRepository
     {
         private readonly PetsProjectDbContext _context;
+        private readonly ILogger<PetRepository> _logger;
 
-        public PetRepository(PetsProjectDbContext context)
+        public PetRepository(PetsProjectDbContext context, ILogger<PetRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        public async Task<List<Pet>> Get(CancellationToken ct)
+        public async Task<List<Pet>> GetForCurrentUser(Guid id, CancellationToken ct)
         {
-            var petEntity = await _context.Pet
-                .AsNoTracking()
+           
+
+            var petEntities = await _context.Pet
+                .Include(u => u.User)
+                .Where(p => p.User.Id == id)
                 .ToListAsync(ct);
+            
+            var results = new List<Pet>();
 
-
-            var results = petEntity
-                    .Select(entity => Pet.Create(
-                        entity.Id,
-                        entity.Name,
-                        entity.Breed,
-                        entity.Gender,
-                        entity.Photo_Id,
-                        entity.Id_User
-                    ))
-                    .ToList();
+            foreach (var entity in petEntities)
+            {
+                var result = Pet.Create(
+                    entity.Id,
+                    entity.Name,
+                    entity.Breed,
+                    entity.Gender,
+                    entity.Photo_Id,
+                    entity.Id_User
+                );
+                if (result.IsSuccess)
+                {
+                    results.Add(result.Value);
+                }
+                else
+                {
+                    _logger.LogError($"Error getting pets for {entity.Id}");
+                }
+            }
 
             return results
-                .Where(r => r.IsSuccess)
-                .Select(r => r.Value!)
                 .OrderByDescending(p => p.Name)
                 .ToList();
         }
@@ -72,7 +85,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             return id;
         }
         
-        public async Task<string> TakePhotoId(Guid user_id, CancellationToken ct)
+        public async Task<string> TakePhotoId(Guid? user_id, CancellationToken ct)
         {
             var photoId = await _context.Pet
                 .Where(u => u.Id == user_id)
@@ -94,7 +107,7 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
         }
         
         
-        public async Task<Guid> UpdatePhoto(Guid id, string photoId, CancellationToken ct)
+        public async Task<Guid?> UpdatePhoto(Guid? id, string photoId, CancellationToken ct)
         {
 
             await _context.Pet

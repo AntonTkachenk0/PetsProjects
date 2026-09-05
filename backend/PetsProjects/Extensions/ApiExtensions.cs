@@ -32,7 +32,18 @@ public static class ApiExtensions
                 };
             });
 
-        services.AddAuthorization();
+        string[] param = {"Read", "Write"};
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AdminPolicy", policy =>
+            {
+                policy.RequireClaim("Admin", param);
+            });
+            options.AddPolicy("UserPolicy", policy =>
+            {
+                policy.RequireClaim("User", "true");
+            });
+        });
         
         
     }

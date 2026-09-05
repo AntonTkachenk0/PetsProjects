@@ -49,13 +49,19 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
             }
         }
 
-        public async Task<UserModel> GetByEmail(string email, CancellationToken ct)
+        public async Task<UserModel?> GetByLogin(string login, CancellationToken ct)
         {
             try
             {
                 var entity = await _context.User
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email == email, ct);
+                    .FirstOrDefaultAsync(u => u.Login == login, ct);
+
+                if (entity == null)
+                {
+                    _logger.LogError("Пользователь не найден с login {Login}", login);
+                    return null;
+                }
                 
                 var results = UserModel.Create(
                     entity.Id,
@@ -68,12 +74,13 @@ namespace PetsProjects.DataBaseAccess.Postgres.Repositories
 
                 if (results.IsSuccess)
                 {
-                    _logger.LogInformation($"Успешное получения пользователя по id с {email}");
-                    return results.Value!;
+                    _logger.LogInformation($"Успешное получения пользователя по id с {login}");
+                    return results.Value;
                 }
                 _logger.LogError(results.Error);
-                return null!;
+                return null;
             }
+            
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);

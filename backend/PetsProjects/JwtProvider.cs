@@ -13,7 +13,12 @@ public class JwtProvider(IOptions<JwtOptions> options) //буду хранить
 
     public string GenerateToken(UserModel user)
     {
-        Claim[] claims = [new ("userId", user.Id.ToString())];
+        Claim[] claims =
+            [
+                new ("userId", user.Id.ToString()),
+                new ("Admin","Write")
+            ];
+        
         
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey)),

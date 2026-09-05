@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using PetsProjects.Abstractions;
 using PetsProjects.Controllers.Contracts;
 using PetsProjects.DataBaseAccess.Postgres.Repositories;
@@ -27,6 +28,7 @@ public class S3Controller : ControllerBase
     }
 
     [HttpPost("image/")]
+    [Authorize]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<PutObjectResponse>> Upload(
         [FromForm] FileUploadDto uploadDto,
@@ -47,6 +49,17 @@ public class S3Controller : ControllerBase
         
         try
         {
+            var userId = User.FindFirst("userId")?.Value;
+                
+            _logger.LogInformation("Попытка запарсить id при изменении фото {UserId}", userId);
+
+            if (userId == null)
+            {
+                _logger.LogError("Полученный id равен null");
+                return Unauthorized("Ошибка авторизации.");
+            }
+            var userIdGuid =  Guid.Parse(userId);
+            
             var newGuid = Guid.NewGuid().ToString();
 
             _logger.LogInformation("Новый id для фото {NewGuid}", newGuid);
@@ -67,15 +80,20 @@ public class S3Controller : ControllerBase
             switch (uploadDto.Role.ToLower())
             {
                 case "user":
-                    photoId = await _userRepository.TakePhotoId(uploadDto.PetOrUserId, ct);
-                    _logger.LogInformation("Изменения для пользователя. Id пользователя {UserId} - новое фото {PhotoId}",uploadDto.PetOrUserId, photoId);
-                    await _userRepository.UpdatePhoto(uploadDto.PetOrUserId, newGuid, ct);
+                    photoId = await _userRepository.TakePhotoId(userIdGuid, ct);
+                    _logger.LogInformation("Изменения для пользователя. Id пользователя {UserId} - новое фото {PhotoId}",userIdGuid, photoId);
+                    await _userRepository.UpdatePhoto(userIdGuid, newGuid, ct);
                     
                     break;
                 case "pet":
-                    photoId = await _petRepository.TakePhotoId(uploadDto.PetOrUserId, ct);
-                    _logger.LogInformation("Изменения для питомца. Id питомца {UserId}  - новое фото {PhotoId}",uploadDto.PetOrUserId, photoId);
-                    await _petRepository.UpdatePhoto(uploadDto.PetOrUserId, newGuid, ct);
+                    if (uploadDto.PetId == null)
+                    {
+                        _logger.LogError("PetId = null");
+                        return BadRequest("PetId = null");
+                    }
+                    photoId = await _petRepository.TakePhotoId(uploadDto.PetId, ct);
+                    _logger.LogInformation("Изменения для питомца. Id питомца {UserId}  - новое фото {PhotoId}",uploadDto.PetId, photoId);
+                    await _petRepository.UpdatePhoto(uploadDto.PetId, newGuid, ct);
                     break;
             }
             
@@ -104,19 +122,20 @@ public class S3Controller : ControllerBase
             }
             else
             {
-                _logger.LogWarning($"Ошибка тута. создание - {responseCreate.HttpStatusCode}") ;
+                _logger.LogWarning($"Ошибка тут. Cоздание - {responseCreate.HttpStatusCode}") ;
                 return BadRequest(
                     $"Ошибка создания или удаления.  создание - {responseCreate.HttpStatusCode}");
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message,  "Ошибка. {UploadDto}", uploadDto.PetOrUserId);
+            _logger.LogError(e.Message,  "Ошибка. {UploadDto}", uploadDto.PetId);
             return StatusCode(500, new { error = e.Message });
         }
     }
 
     [HttpGet("image/{photo_id}")]
+    [Authorize]
     public async Task<IActionResult> GetImage([FromRoute] string photo_id, CancellationToken ct)
     {
 

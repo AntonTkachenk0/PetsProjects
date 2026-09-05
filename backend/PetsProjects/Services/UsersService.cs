@@ -37,10 +37,15 @@ public class UsersService
 
     }
 
-    public async Task<string> Login(string email, string password, CancellationToken ct)
+    public async Task<string?> Login(string login, string password, CancellationToken ct)
     {
-        var user = await _repository.GetByEmail(email, ct);
+        var user = await _repository.GetByLogin(login, ct);
 
+        if (user == null)
+        {
+            return null;
+        }
+        
         var result =  _passwordHasher.Verify(password, user.PasswordHached);
 
         if (!result)

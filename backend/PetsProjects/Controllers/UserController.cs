@@ -24,9 +24,13 @@ namespace PetsProjects.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize("AdminPolicy")]
         public async Task<ActionResult<List<UserResponse>>> Get(CancellationToken ct)
         {
+            
+            var userId = User.FindFirst("Admin")?.Value;
+            
+            _logger.LogInformation("Полученный токен {UserId}", userId);
             var user = await _repository.Get(ct);
 
             var response = user.Select(p => new UserResponse(p.Id, p.Name, p.Login, p.Email, p.PasswordHached, p.PhotoS3Key));
@@ -35,11 +39,25 @@ namespace PetsProjects.Controllers
         }
         
         [HttpGet("user")]  
-        public async Task<ActionResult<UserResponse>> GetById(
-            [FromQuery] Guid id,  
-            CancellationToken ct)
+        [Authorize]
+        public async Task<ActionResult<UserResponse>> GetById(CancellationToken ct)
         {
-            var user = await _repository.GetById(id, ct);
+            var userId = User.FindFirst("userId")?.Value;
+
+
+            if (userId == null)
+            {
+                _logger.LogError("Равен Id null");
+                return BadRequest("Ошибка пользователя. Id равен null");
+            }
+            _logger.LogInformation("Попытка запарсить id {UserId}", userId);
+                
+            var userIdGuid =  Guid.Parse(userId);
+                
+            _logger.LogInformation("Парс выполнен успешно");
+            
+            
+            var user = await _repository.GetById(userIdGuid, ct);
 
             var response = new UserResponse(
                 user.Id, 
@@ -83,11 +101,25 @@ namespace PetsProjects.Controllers
         {
             try
             {
+                var userId = User.FindFirst("userId")?.Value;
+
+
+                if (userId == null)
+                {
+                    _logger.LogError("Равен Id null");
+                    return BadRequest("Ошибка пользователя. Id равен null");
+                }
+                _logger.LogInformation("Попытка запарсить id {UserId}", userId);
+                
+                var userIdGuid =  Guid.Parse(userId);
+                
+                _logger.LogInformation("Парс выполнен успешно");
+                
                 _logger.LogInformation("Данные пользователя: {Request}", request);
 
-                await _repository.UpdateInfo(request.Id, request.Name!, request.Login!, request.Email!, ct);
+                await _repository.UpdateInfo(userIdGuid, request.Name!, request.Login!, request.Email!, ct);
 
-                return Ok(request.Id);
+                return Ok(userIdGuid);
             }
             catch (Exception e)
             {
@@ -98,19 +130,43 @@ namespace PetsProjects.Controllers
         
 
         [HttpGet("take-sum")]
-        public async Task<ActionResult<decimal>> TakeSum([FromQuery] Guid userId,CancellationToken ct)
+        public async Task<ActionResult<decimal>> TakeSum(CancellationToken ct)
         {
-            Console.WriteLine(userId);
-           var result = await  _repository.TakeSum(userId, ct);
+            var userId = User.FindFirst("userId")?.Value;
+
+            if (userId == null)
+            {
+                _logger.LogError("Равен Id null");
+                return BadRequest("Ошибка пользователя. Id равен null");
+            }
+            _logger.LogInformation("Попытка запарсить id {UserId}", userId);
+                
+            var userIdGuid =  Guid.Parse(userId);
+                
+            _logger.LogInformation("Парс выполнен успешно");
+            
+           var result = await  _repository.TakeSum(userIdGuid, ct);
 
            return Ok(result);
         }
 
         [HttpGet("take-history")]
-        public async Task<IActionResult> TakeHistory([FromQuery] Guid userId, CancellationToken ct)
+        public async Task<IActionResult> TakeHistory(CancellationToken ct)
         {
+            var userId = User.FindFirst("userId")?.Value;
+
+            if (userId == null)
+            {
+                _logger.LogError("Равен Id null");
+                return BadRequest("Ошибка пользователя. Id равен null");
+            }
+            _logger.LogInformation("Попытка запарсить id {UserId}", userId);
+                
+            var userIdGuid =  Guid.Parse(userId);
+                
+            _logger.LogInformation("Парс выполнен успешно");
             _logger.LogInformation("{UserId}", userId);
-            var result = await _repository.TakeHistory(userId, ct);
+            var result = await _repository.TakeHistory(userIdGuid, ct);
             
             return Ok(result);
         }
@@ -125,16 +181,37 @@ namespace PetsProjects.Controllers
             // await _repository.Create(user.Value!, ct);
             return Ok();
         }
+        
+        
+        
         [HttpPost("login")]
-        public async Task<ActionResult<Guid>> Login(
+        public async Task<ActionResult<string>> Login(
             [FromBody] LoginUserRequest request,
             CancellationToken ct)
         {
-            var token = await _service.Login(request.Email, request.Password, ct);
+            var token = await _service.Login(request.Login, request.Password, ct);
+
+            if (token == null)
+            {
+                _logger.LogError("токен не создался");
+                return Unauthorized("Ошибка авторизации. Неверный логин или пароль");
+            }
             
-            HttpContext.Response.Cookies.Append("tasty-cookies", token);
+            HttpContext.Response.Cookies.Append("tasty-cookies", token, new CookieOptions
+            {
+                Expires = DateTimeOffset.Now.AddDays(7)
+            });
+            
             
             return Ok(token);
         }
+
+        [HttpPost("logout")]
+        public async Task<ActionResult<bool>> Logout()
+        {
+            HttpContext.Response.Cookies.Delete("tasty-cookies");
+            return Ok(true);
+        }
+
     }
 }
